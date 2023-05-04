@@ -1,0 +1,10 @@
+import * as admin from 'firebase-admin'
+
+
+export const app = admin.initializeApp({
+    credential: admin.credential.cert({
+        projectId: "projectsharib",
+        clientEmail: 'sharpprogrammer2018@gmail.com',
+        privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCo6PQ3Uyx4rAbK\n9qwGyBpy7NcGmIQtoit1muH4uvvjB82O+jMdMbHHAkKyN/LKbb9NHcKzm+hovwhQ\nRrfL9vdtTNmF91+wEKTH+KnW2SLEsRZbJ1SpmYTRZllYHdds3YuzHpww6UojaMVu\nLL9akyEyGJQ5b5Wj5ubByZ/yb19369Fk+n9E7aIPIrH/jt3X3nzGWd+VFXX6dpZh\nC2SdabrEjLkhmsu5ysU0SlbkOegT7+QGyiJnyzobPSP7vrAFee9OrIX7nEdGVzqZ\nlsutnQ7gsSoUccZnbkUYpSBzOyCI9c1D813BDQB8XGdswRrQROP/f8tq29m9RXS0\n1PlN47OBAgMBAAECggEAHY+DaglK36WPnMa1zYwIoPNVIGjhvRDEFVVxVbP3sEBl\n169u8Z2IVOFO5dzHx2iUkbzzHbbb4jUIkfAGa5JBtCW+beUgoHIRPJQGuTyQCqdJ\nV9OWzAW7imAko7i5Qmq1b7gcMq0pVfAYmVMIfCQCq79EdZbTM/eNi/2q2eVm6lgY\nqIPW+LGb3PHKOObk1ylE9ffPo1mevwAnNM7ahbI2ByLWBjlHogOmzcrUpnnH92jm\nXsmwJ6vcP5Ev0Gif9Le9NobFKyzeOsxKmhj7fZXHeGq4C0b22O7WkjTbdjlNhVwE\n2WQUzZoOSxRBVxZdvYMPGF4MAQUZ37huCFVZvfy5SQKBgQDRPZ9AUvK14AMRdH0b\nQa6qmperDApJY7OOxPXElDH1wlRqCRMsWFA/t+LOHhb2JZSvG9jHg218PsFcXNv/\n4rGnpBNcU9JY4wcHHe59sAk+oU5/T8IxZsAVy5illN3tPUUCIvir7Oo05TA+SDD8\nLBU0EKBlHohm6VZP4EqGSAyDfQKBgQDOqBCswlvHfRs/qKE0rKkguJpzaEh/FMh+\nV5gRQOD+zHntJ27Lcfd+26+P+fzQABTWIaMGKDUqYg802lj3D7d2nFjo+RxzWyTH\nlx7SffqNLr3YbJDpV2DpoL1LtzVxYBQ/PWTvD0atWARMgzIIhl8DuWm1cZCNVkEW\nGrIFZsQnVQKBgQC/n5KfwxdaLxxAORF2C9IdldR+plkpWvCPOJvnetzCOEU8krEH\ndJ2RrSM+JtpadJJVR8hg92EmXwaQQs6L6p1ObPn6HR3Pn6LJBsVqP/RHckzEVVQA\nEBysGTfjtJEF+o2fZk2cjizzYk2rTEvoNar5cpyh3rOGo/0Sy9MUZRlotQKBgQCe\nS246ZsYWkGYG5QxWZMtIHR9xtzeQ4EKTRFVfIes2QTpDxii//ZQuv+hCyKI2UVmk\njC9rz/CpfmNXgMkUth055ZjVG7wHQJFzsPYTFhyNeHhDByYZFq1NR6q4DKYLKiVY\nK5bc5z6kGP9x/CyfCw5MtAGc0lh/asqAPAKQ0J7/4QKBgCkNtkKKlTeNvCzBKu0q\nKNAKeW3pCI5/T2hfF4ztstoLJumJL/98aW8vZ5Bkx9tx+dv7bTC86HpRNaw4y1HA\n621z16DEbj3FXXQQg6PCalun+k+ivKr1PSPWwDoQq8Idfn9FkVc3J/VPeKDZLJ53\nj6n4fQ97kmGkBlKnheilSMgo\n-----END PRIVATE KEY-----\n"
+    })
+})

@@ -1,13 +1,11 @@
 import { Controller, Param, Get, HttpException, HttpStatus, Post, Body, Delete, Patch, HttpCode, UseGuards, Req } from "@nestjs/common";
 import { PrismaService } from "src/Prisma.Service";
 import { AddUserDTO, UpdateUserDTO } from "./user.DTOs";
-import { AuthGuard } from "@nestjs/passport";
 
 @Controller('user')
 export class UserController {
     constructor(private readonly pService: PrismaService) { }
 
-    @UseGuards(AuthGuard('jwt'))
     @Get()
     async getUserId(@Req() req) {
         const user = await this.pService.user.findFirst({
