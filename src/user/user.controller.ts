@@ -31,22 +31,13 @@ export class UserController {
         }
     }
 
-    @Delete(':id')
-    deleteUser(@Param('id') id) {
-        return this.pService.user.delete({
-            where: {
-                id: id
-            }
-        })
-    }
-
-    @Patch(':id')
+    @Patch()
     @HttpCode(HttpStatus.OK)
-    async updateUser(@Param('id') id, @Body() body: UpdateUserDTO) {
+    async updateUser(@Param('id') id, @Body() body: UpdateUserDTO, @Req() req) {
         try {
             await this.pService.user.update({
                 where: {
-                    id: id
+                    firebaseId: req.user.user_id
                 },
                 data: body
             })
