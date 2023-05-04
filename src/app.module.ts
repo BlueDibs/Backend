@@ -6,11 +6,13 @@ import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { UserModule } from './user/user.module';
 import { PassportModule } from '@nestjs/passport';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
     PassportModule,
-    UserModule
+    UserModule,
+    PostModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, {
