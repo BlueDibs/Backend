@@ -1,4 +1,4 @@
-import { Controller, Param, Get, HttpException, HttpStatus, Post, Body, Delete, Patch, HttpCode, UseGuards } from "@nestjs/common";
+import { Controller, Param, Get, HttpException, HttpStatus, Post, Body, Delete, Patch, HttpCode, UseGuards, Req } from "@nestjs/common";
 import { PrismaService } from "src/Prisma.Service";
 import { AddUserDTO, UpdateUserDTO } from "./user.DTOs";
 import { AuthGuard } from "@nestjs/passport";
@@ -8,11 +8,11 @@ export class UserController {
     constructor(private readonly pService: PrismaService) { }
 
     @UseGuards(AuthGuard('jwt'))
-    @Get(':id')
-    async getUserId(@Param('id') id) {
+    @Get()
+    async getUserId(@Req() req) {
         const user = await this.pService.user.findFirst({
             where: {
-                id: id
+                firebaseId: req.user.user_id
             }
         })
 
