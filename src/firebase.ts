@@ -1,10 +1,23 @@
 import * as admin from 'firebase-admin'
+import { getStorage, ref } from "firebase/storage";
+import type { Bucket } from '@google-cloud/storage'
 
 
 export const app = admin.initializeApp({
     credential: admin.credential.cert({
-        projectId: "projectsharib",
-        clientEmail: 'sharpprogrammer2018@gmail.com',
-        privateKey: "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCo6PQ3Uyx4rAbK\n9qwGyBpy7NcGmIQtoit1muH4uvvjB82O+jMdMbHHAkKyN/LKbb9NHcKzm+hovwhQ\nRrfL9vdtTNmF91+wEKTH+KnW2SLEsRZbJ1SpmYTRZllYHdds3YuzHpww6UojaMVu\nLL9akyEyGJQ5b5Wj5ubByZ/yb19369Fk+n9E7aIPIrH/jt3X3nzGWd+VFXX6dpZh\nC2SdabrEjLkhmsu5ysU0SlbkOegT7+QGyiJnyzobPSP7vrAFee9OrIX7nEdGVzqZ\nlsutnQ7gsSoUccZnbkUYpSBzOyCI9c1D813BDQB8XGdswRrQROP/f8tq29m9RXS0\n1PlN47OBAgMBAAECggEAHY+DaglK36WPnMa1zYwIoPNVIGjhvRDEFVVxVbP3sEBl\n169u8Z2IVOFO5dzHx2iUkbzzHbbb4jUIkfAGa5JBtCW+beUgoHIRPJQGuTyQCqdJ\nV9OWzAW7imAko7i5Qmq1b7gcMq0pVfAYmVMIfCQCq79EdZbTM/eNi/2q2eVm6lgY\nqIPW+LGb3PHKOObk1ylE9ffPo1mevwAnNM7ahbI2ByLWBjlHogOmzcrUpnnH92jm\nXsmwJ6vcP5Ev0Gif9Le9NobFKyzeOsxKmhj7fZXHeGq4C0b22O7WkjTbdjlNhVwE\n2WQUzZoOSxRBVxZdvYMPGF4MAQUZ37huCFVZvfy5SQKBgQDRPZ9AUvK14AMRdH0b\nQa6qmperDApJY7OOxPXElDH1wlRqCRMsWFA/t+LOHhb2JZSvG9jHg218PsFcXNv/\n4rGnpBNcU9JY4wcHHe59sAk+oU5/T8IxZsAVy5illN3tPUUCIvir7Oo05TA+SDD8\nLBU0EKBlHohm6VZP4EqGSAyDfQKBgQDOqBCswlvHfRs/qKE0rKkguJpzaEh/FMh+\nV5gRQOD+zHntJ27Lcfd+26+P+fzQABTWIaMGKDUqYg802lj3D7d2nFjo+RxzWyTH\nlx7SffqNLr3YbJDpV2DpoL1LtzVxYBQ/PWTvD0atWARMgzIIhl8DuWm1cZCNVkEW\nGrIFZsQnVQKBgQC/n5KfwxdaLxxAORF2C9IdldR+plkpWvCPOJvnetzCOEU8krEH\ndJ2RrSM+JtpadJJVR8hg92EmXwaQQs6L6p1ObPn6HR3Pn6LJBsVqP/RHckzEVVQA\nEBysGTfjtJEF+o2fZk2cjizzYk2rTEvoNar5cpyh3rOGo/0Sy9MUZRlotQKBgQCe\nS246ZsYWkGYG5QxWZMtIHR9xtzeQ4EKTRFVfIes2QTpDxii//ZQuv+hCyKI2UVmk\njC9rz/CpfmNXgMkUth055ZjVG7wHQJFzsPYTFhyNeHhDByYZFq1NR6q4DKYLKiVY\nK5bc5z6kGP9x/CyfCw5MtAGc0lh/asqAPAKQ0J7/4QKBgCkNtkKKlTeNvCzBKu0q\nKNAKeW3pCI5/T2hfF4ztstoLJumJL/98aW8vZ5Bkx9tx+dv7bTC86HpRNaw4y1HA\n621z16DEbj3FXXQQg6PCalun+k+ivKr1PSPWwDoQq8Idfn9FkVc3J/VPeKDZLJ53\nj6n4fQ97kmGkBlKnheilSMgo\n-----END PRIVATE KEY-----\n"
-    })
+        type: "service_account",
+        project_id: "projectsharib",
+        private_key_id: "63931119fda366fb6b06375cab0aea54d33da45e",
+        private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDQsAq3VATOugT8\nxWII5l/Tj1mIFIMt/pmks6TdbTSYaQ6bvONNjmGMsLhJjOebptBXHDMDUOPEJ0Mr\nd9b3hyCLHS1P2ebgJ9/fDYdsmjidHWDOv1MUZvjAQ9o2Z5QgiFXqggoXJP3CTDwM\n73vZY2lTAhoeNwGVsp461kh6U7g7wGGGjPzdjnSmV5W+u7JSWkIsxnyZTGCBP+Gh\neHsbPf3a4KgUpLiBkgzcJtFRYI/YP4xiC7R33b6xGQxnwguZpNnrzITJm/+ayZuG\nyY97fPiS6bzk/K4u+5unxSx6EJ2uIAitwp4PWCQIvJ6kd8i0/i5/AqAvlSDJa6iN\nZDEKIT5jAgMBAAECggEAGRzeJUKUk4X6HKrqCbUjWfOZrBD/2jSVq6a8k7LVDfQy\ngFZCKi6UmZgYjS1KH8Z6ssjfcKo2xn+NCzmQIlhd96+qqL3JlTbnL1HS9qQ2ZN3I\nrQiECGP90jE4HKzpO+L8J8y/Rxq5+Lwwy8Oz7SyT25vYpcMryyZj+SOZNDNH69Sa\nhc/PT6VrGkhDGvH0lHwaUdkry+2mChhGoHAwtzkYYKjiNsT8zJc0rNpz2I8Nt5mw\nvAUODwTepIvSpahqINN1IsM5S0GvhkqJHW1pGr3oWPncQYAKFrSpBrTa5FSp/aUw\njHZfo87yIIqJyqeHRFJZP0NCqEV5A1y5OTtybrMlGQKBgQD3Zx8LTop7Szm4Hlc1\n6PKyexgeU0p4Cp5YX0GwUrMItv5CXoYJyJO3GQ+p4tqulIzd7xDWysXj3NBP//0m\ndXjBmtd60Im8BLYcu+CWpjpWNfBQQFZGQWDfDDwfRKp2cNtiabBGikByE8xSN45N\nqjXVlADRWfwX42bvX/es091N2QKBgQDX8INhOW0GRMnHxhwU+mqBXUSO9gbHN0Yn\nDv9LvFPaQSvohbsbi0XN8f3krSBZxOj+R2y8JFsCqTnxpCjyBTO9nUbF0ps0tC5s\nodSV9Ax4jstjSGdhhoSXVLn/txfhaBw2rYnXjfe9ZkkVYeGci9eJYMHlT+/0cAAg\nnUcAwh58mwKBgDQ7JSax8jKNcyYX4bmT8IkVy8W7N+GX/E4T7j5Xd0zDtXI1mn6+\nRdFGDTSEnD53RjYknp16OcUdfS0mkj9oVZIqKovXMvzq0bfHQmcLuQ0yXgXTT2ON\nsfHlF1xSltpigS6JuZlq3qg23dANwpFK+gqZMIMCSGKSs8ydqiBmqjYhAoGAdbbp\nB8EUS8yH6t12RYFVOfwr+XroqwTYu0YTqaeaVmock38DRrqfbOs0KsqtzgHnuWYa\nQl3XNxYlPjLtFzH6yKzJ/eEXNp3aiOGXT79gZQACo7a+lI2ODijj1CBtZjUo3C2x\n7M25dYgi4wMeyAX7kyopyOXQuwGrMBxMrn8ju20CgYBGneOigWZn3QWnkc7F2EN8\nPHSnptOcYCL/F2i4NB8RS+Vmn1Tm/Q+RBMGN1i3qrjiHQEjI+DpHfyQ2IJAhOlpn\n62rPHLaLrgzlePAVRiylPgiV0pueVUD0VsYxnD7LZVBuFjjAD+f0wu/wEUFDSs33\ncG7KLzpbLEG/d/FwsqopdA==\n-----END PRIVATE KEY-----\n",
+        client_email: "firebase-adminsdk-8x0uj@projectsharib.iam.gserviceaccount.com",
+        client_id: "115790700291619911953",
+        auth_uri: "https://accounts.google.com/o/oauth2/auth",
+        token_uri: "https://oauth2.googleapis.com/token",
+        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+        client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-8x0uj%40projectsharib.iam.gserviceaccount.com"
+    } as admin.ServiceAccount
+    ),
+    storageBucket: process.env.BUCKET_URL,
 })
+
+export const bucket: Bucket = admin.storage().bucket(process.env.BUCKET_URL)
