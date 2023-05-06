@@ -1,6 +1,10 @@
-import { Controller, Param, Get, HttpException, HttpStatus, Post, Body, Delete, Patch, HttpCode, UseGuards, Req } from "@nestjs/common";
+import { Controller, Param, Get, HttpException, HttpStatus, Post, Body, Delete, Patch, HttpCode, UseGuards, Req, UseInterceptors, UploadedFile } from "@nestjs/common";
 import { PrismaService } from "src/Prisma.Service";
-import { AddUserDTO, UpdateUserDTO } from "./user.DTOs";
+import { AddUserDTO, UpdateUserDTO, updateUserSchema } from "./user.DTOs";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { Multer } from "multer";
+import { bucket } from "src/firebase";
+import { SaveOptions } from "@google-cloud/storage";
 
 @Controller('user')
 export class UserController {
@@ -33,8 +37,20 @@ export class UserController {
 
     @Patch()
     @HttpCode(HttpStatus.OK)
-    async updateUser(@Param('id') id, @Body() body: UpdateUserDTO, @Req() req) {
+    @UseInterceptors(FileInterceptor('avatar'))
+    async updateUser(@Req() req, @UploadedFile('file') avatar: Express.Multer.File) {
+        const body = updateUserSchema.parse(req.body);
+
         try {
+            if (avatar) {
+                console.log('avatar change detected uploading profile pic')
+                // will refactor this into an individual storage service
+                const filename = avatar.originalname.split('.')[0] + Date.now() + '.' + avatar.originalname.split('.').pop()
+                const fileRef = bucket.file(filename);
+                await fileRef.save(avatar.buffer, { contentType: avatar.mimetype, cacheControl: 'public, max-age=31536000' } as SaveOptions)
+                delete body.avatar
+                body.avatarPath = filename;
+            }
             await this.pService.user.update({
                 where: {
                     firebaseId: req.user.user_id
@@ -42,6 +58,7 @@ export class UserController {
                 data: body
             })
         } catch (err) {
+            console.log(err)
             if (err.code == 'P2002' && err.meta.target.includes['username']) {
                 throw new HttpException('username already exsists', HttpStatus.CONFLICT)
             }
