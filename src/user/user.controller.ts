@@ -35,6 +35,19 @@ export class UserController {
         }
     }
 
+
+    @Get('search/:name')
+    searchUserByName(@Param('name') name) {
+        return this.pService.user.findMany({
+            where: {
+                username: {
+                    contains: name,
+                    mode: 'insensitive'
+                }
+            }
+        })
+    }
+
     @Patch()
     @HttpCode(HttpStatus.OK)
     @UseInterceptors(FileInterceptor('avatar'))
