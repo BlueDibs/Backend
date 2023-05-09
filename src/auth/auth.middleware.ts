@@ -10,6 +10,7 @@ export class AuthMiddleware implements NestMiddleware {
             const accessToken = req.headers.authorization.split(' ')[1];
             const decodedToken = await app.auth().verifyIdToken(accessToken);
             req.user = decodedToken
+            console.log(decodedToken)
             next();
         } catch (err) {
             res.status(401).send('Unauthorized')

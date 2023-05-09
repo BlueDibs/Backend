@@ -25,7 +25,8 @@ export class PostController {
             }
         })
 
-        console.log(res)
+        return res;
+
     }
 
     @Get(':id')

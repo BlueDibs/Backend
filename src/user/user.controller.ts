@@ -18,9 +18,21 @@ export class UserController {
             }
         })
 
-        if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+        if (!user) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
 
         return user;
+    }
+
+    @Get(':id')
+    async getPublicUser(@Param('id') id) {
+        const user = await this.pService.user.findFirst({
+            where: {
+                id: id
+            }
+        })
+
+        if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+        return user
     }
 
     @Post()
@@ -61,9 +73,10 @@ export class UserController {
                 const filename = avatar.originalname.split('.')[0] + Date.now() + '.' + avatar.originalname.split('.').pop()
                 const fileRef = bucket.file(filename);
                 await fileRef.save(avatar.buffer, { contentType: avatar.mimetype, cacheControl: 'public, max-age=31536000' } as SaveOptions)
-                delete body.avatar
                 body.avatarPath = filename;
             }
+            if (body.avatar) delete body.avatar
+
             await this.pService.user.update({
                 where: {
                     firebaseId: req.user.user_id
