@@ -1,6 +1,6 @@
 import { Controller, Param, Get, HttpException, HttpStatus, Post, Body, Delete, Patch, HttpCode, UseGuards, Req, UseInterceptors, UploadedFile } from "@nestjs/common";
 import { PrismaService } from "src/Prisma.Service";
-import { AddUserDTO, UpdateUserDTO, updateUserSchema } from "./user.DTOs";
+import { AddUserDTO, MultipleProfilesDTO, UpdateUserDTO, updateUserSchema } from "./user.DTOs";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Multer } from "multer";
 import { bucket } from "src/firebase";
@@ -9,6 +9,20 @@ import { SaveOptions } from "@google-cloud/storage";
 @Controller('user')
 export class UserController {
     constructor(private readonly pService: PrismaService) { }
+
+    @Post('profiles')
+    async getMultipleUserProfile(@Body() profiles: MultipleProfilesDTO) {
+        return this.pService.user.findMany({
+            where: {
+                id: { in: profiles },
+            },
+            select: {
+                id: true,
+                username: true,
+                avatarPath: true,
+            }
+        })
+    }
 
     @Get()
     async getUserId(@Req() req) {

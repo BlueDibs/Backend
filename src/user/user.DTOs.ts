@@ -13,5 +13,10 @@ export const updateUserSchema = addUserSchema.partial().omit({ firebaseId: true,
     avatarPath: z.string().optional()
 }).strict()
 
+
+export const multipleProfileDTO = z.array(z.string())
+
 export class AddUserDTO extends createZodDto(addUserSchema) { }
 export class UpdateUserDTO extends createZodDto(updateUserSchema) { }
+export class MultipleProfilesDTO extends createZodDto(multipleProfileDTO) { }
+

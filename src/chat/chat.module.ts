@@ -1,16 +1,14 @@
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
-import { UserController } from "./user.controller";
+import { ChatController } from "./chat.controller";
 import { PrismaService } from "src/Prisma.Service";
-import { PassportModule } from "@nestjs/passport";
 import { AuthMiddleware } from "src/auth/auth.middleware";
 
 @Module({
-    imports: [],
-    controllers: [UserController],
+    controllers: [ChatController],
     providers: [PrismaService]
 })
-export class UserModule implements NestModule {
+export class ChatModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer.apply(AuthMiddleware).exclude("chats/:id").forRoutes('*')
+        consumer.apply(AuthMiddleware).forRoutes('*')
     }
 }
