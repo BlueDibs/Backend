@@ -10,6 +10,38 @@ import { SaveOptions } from "@google-cloud/storage";
 export class UserController {
     constructor(private readonly pService: PrismaService) { }
 
+    @Post('follow/:id')
+    async followUser(@Param('id') id, @Req() req) {
+        return this.pService.user.update({
+            where: {
+                firebaseId: req.user.user_id
+            },
+            data: {
+                following: {
+                    connect: {
+                        id: id
+                    }
+                }
+            }
+        })
+    }
+
+    @Post('unfollow/:id')
+    unfollowUser(@Param('id') id, @Req() req) {
+        return this.pService.user.update({
+            where: {
+                firebaseId: req.user.user_id
+            },
+            data: {
+                following: {
+                    disconnect: {
+                        id: id
+                    }
+                }
+            }
+        })
+    }
+
     @Post('profiles')
     async getMultipleUserProfile(@Body() profiles: MultipleProfilesDTO) {
         return this.pService.user.findMany({
