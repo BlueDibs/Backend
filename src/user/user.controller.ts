@@ -1,14 +1,46 @@
-import { Controller, Param, Get, HttpException, HttpStatus, Post, Body, Delete, Patch, HttpCode, UseGuards, Req, UseInterceptors, UploadedFile } from "@nestjs/common";
+import { Controller, Param, Get, HttpException, HttpStatus, Post, Body, Patch, HttpCode, Req, UseInterceptors, UploadedFile } from "@nestjs/common";
 import { PrismaService } from "src/Prisma.Service";
-import { AddUserDTO, MultipleProfilesDTO, UpdateUserDTO, updateUserSchema } from "./user.DTOs";
+import { AddUserDTO, MultipleProfilesDTO, updateUserSchema } from "./user.DTOs";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { Multer } from "multer";
 import { bucket } from "src/firebase";
 import { SaveOptions } from "@google-cloud/storage";
+import type { Post as MediaPost } from "@prisma/client";
 
 @Controller('user')
 export class UserController {
     constructor(private readonly pService: PrismaService) { }
+
+
+    // feeds algorithim
+    @Get('feed')
+    async getUserFeeds(@Req() req) {
+        const user = await this.pService.user.findFirst({
+            where: {
+                firebaseId: req.user.user_id
+            },
+            select: {
+                following: {
+                    include: {
+                        Posts: {
+                            orderBy: {
+                                created: 'desc'
+                            }
+                        }
+                    },
+                }
+            }
+        })
+
+        if (!user) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
+
+        const posts: MediaPost[] = user.following.flatMap((item) => item.Posts).sort((a, b) =>
+            new Date(b.created).getSeconds() - new Date(a.created).getSeconds()
+        )
+
+        // sort by created on flat map
+
+        return posts
+    }
 
     @Post('follow/:id')
     async followUser(@Param('id') id, @Req() req) {

@@ -21,7 +21,8 @@ export class PostController {
         const res = await this.pService.post.create({
             data: {
                 path: filename,
-                userId: id
+                userId: id,
+                created: new Date().toISOString()
             }
         })
 

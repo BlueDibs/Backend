@@ -12,6 +12,7 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
+    "lib": ["es2019"],
     "strictNullChecks": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
