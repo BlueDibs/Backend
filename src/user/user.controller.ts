@@ -24,6 +24,15 @@ export class UserController {
                         Posts: {
                             orderBy: {
                                 created: 'desc'
+                            },
+                            take: 5,
+                            include: {
+                                User: {
+                                    select: {
+                                        username: true,
+                                        avatarPath: true
+                                    }
+                                }
                             }
                         }
                     },
@@ -36,8 +45,6 @@ export class UserController {
         const posts: MediaPost[] = user.following.flatMap((item) => item.Posts).sort((a, b) =>
             new Date(b.created).getSeconds() - new Date(a.created).getSeconds()
         )
-
-        // sort by created on flat map
 
         return posts
     }
