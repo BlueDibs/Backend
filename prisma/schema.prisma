@@ -21,17 +21,24 @@ model User {
   followersIDs String[] @db.ObjectId
   following    User[]   @relation("UserFollows", fields: [followingIDs], references: [id])
   followingIDs String[] @db.ObjectId
-  Posts        Post[]
+  Posts        Post[]   @relation("owner")
+
+  PostLikedIDs String[] @db.ObjectId
+  PostsLiked   Post[]   @relation("postLiked", fields: [PostLikedIDs], references: [id])
 
   @@unique([firebaseId, email, username])
 }
 
 model Post {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
   path    String
   caption String?
-  likes   Int      @default(0)
-  User    User     @relation(fields: [userId], references: [id])
+  likes   Int     @default(0)
+  User    User    @relation("owner", fields: [userId], references: [id])
+
+  UserLikedIDs String[] @db.ObjectId
+  UsersLiked   User[]   @relation("postLiked", fields: [UserLikedIDs], references: [id])
+
   userId  String   @db.ObjectId
   created DateTime
 }

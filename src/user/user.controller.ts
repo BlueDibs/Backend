@@ -10,6 +10,41 @@ import type { Post as MediaPost } from "@prisma/client";
 export class UserController {
     constructor(private readonly pService: PrismaService) { }
 
+    @Post('like/:id')
+    async likePost(@Param('id') id, @Req() req) {
+        await this.pService.user.update({
+            where: {
+                firebaseId: req.user.user_id
+            },
+            data: {
+                PostsLiked: {
+                    connect: {
+                        id: id
+                    }
+                }
+            }
+        })
+
+        return id
+    }
+
+    @Post('unLike/:id')
+    async dislikePOst(@Param('id') id, @Req() req) {
+        await this.pService.user.update({
+            where: {
+                firebaseId: req.user.user_id
+            },
+            data: {
+                PostsLiked: {
+                    disconnect: {
+                        id: id
+                    }
+                }
+            }
+        })
+        return id
+    }
+
 
     // feeds algorithim
     @Get('feed')
@@ -100,7 +135,7 @@ export class UserController {
         const user = await this.pService.user.findFirst({
             where: {
                 firebaseId: req.user.user_id
-            }
+            },
         })
 
         if (!user) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED)
