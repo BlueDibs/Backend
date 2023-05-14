@@ -16,7 +16,8 @@ export class CommentController {
                 User: {
                     select: {
                         username: true,
-                        avatarPath: true
+                        avatarPath: true,
+                        id: true
                     }
                 }
             }
@@ -44,7 +45,9 @@ export class CommentController {
                 User: {
                     select: {
                         username: true,
-                        avatarPath: true
+                        avatarPath: true,
+                        id: true
+
                     }
                 }
             }
