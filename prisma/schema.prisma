@@ -23,8 +23,9 @@ model User {
   followingIDs String[] @db.ObjectId
   Posts        Post[]   @relation("owner")
 
-  PostLikedIDs String[] @db.ObjectId
-  PostsLiked   Post[]   @relation("postLiked", fields: [PostLikedIDs], references: [id])
+  PostLikedIDs String[]  @db.ObjectId
+  PostsLiked   Post[]    @relation("postLiked", fields: [PostLikedIDs], references: [id])
+  Comment      Comment[]
 
   @@unique([firebaseId, email, username])
 }
@@ -39,6 +40,21 @@ model Post {
   UserLikedIDs String[] @db.ObjectId
   UsersLiked   User[]   @relation("postLiked", fields: [UserLikedIDs], references: [id])
 
-  userId  String   @db.ObjectId
+  userId  String    @db.ObjectId
+  created DateTime
+  Comment Comment[]
+}
+
+model Comment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  User   User   @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+
+  Post   Post   @relation(fields: [postId], references: [id])
+  postId String @db.ObjectId
+
+  content String
+
   created DateTime
 }
