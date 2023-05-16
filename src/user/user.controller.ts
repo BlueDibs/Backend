@@ -65,7 +65,8 @@ export class UserController {
                                 User: {
                                     select: {
                                         username: true,
-                                        avatarPath: true
+                                        avatarPath: true,
+                                        id: true
                                     }
                                 }
                             }
@@ -176,6 +177,20 @@ export class UserController {
                     contains: name,
                     mode: 'insensitive'
                 }
+            }
+        })
+    }
+
+    @Get('feeds/:username')
+    getUserByUsername(@Param('username') username) {
+        return this.pService.post.findMany({
+            where: {
+                User: {
+                    username: username
+                },
+            },
+            include: {
+                User: true
             }
         })
     }
