@@ -34,7 +34,25 @@ model User {
 
   price Int @default(1)
 
+  Holdings Holding[] @relation("bought")
+
+  TIIYS Holding[] @relation("sold")
+
   @@unique([firebaseId, email, username])
+}
+
+model Holding {
+  ownership_id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  buyerUser User   @relation("bought", fields: [buyer_id], references: [id])
+  buyer_id  String @db.ObjectId
+
+  amount Int
+
+  sellerUser User   @relation("sold", fields: [seller_id], references: [id])
+  seller_id  String @db.ObjectId
+
+  created DateTime
 }
 
 model Post {
