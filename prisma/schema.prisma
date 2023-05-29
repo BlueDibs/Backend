@@ -27,6 +27,13 @@ model User {
   PostsLiked   Post[]    @relation("postLiked", fields: [PostLikedIDs], references: [id])
   Comment      Comment[]
 
+  shares Int @default(10000000)
+  equity Int @default(0)
+
+  balance Int @default(0)
+
+  price Int @default(1)
+
   @@unique([firebaseId, email, username])
 }
 

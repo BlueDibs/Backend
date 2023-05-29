@@ -10,6 +10,15 @@ import type { Post as MediaPost } from "@prisma/client";
 export class UserController {
     constructor(private readonly pService: PrismaService) { }
 
+    @Get('username/:username')
+    getUser(@Param('username') username) {
+        return this.pService.user.findFirst({
+            where: {
+                username: username
+            }
+        })
+    }
+
     @Post('like/:id')
     async likePost(@Param('id') id, @Req() req) {
         await this.pService.user.update({
