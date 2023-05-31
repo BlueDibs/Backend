@@ -27,16 +27,20 @@ model User {
   PostsLiked   Post[]    @relation("postLiked", fields: [PostLikedIDs], references: [id])
   Comment      Comment[]
 
-  shares Int @default(10000000)
-  equity Int @default(0)
+  shares Int   @default(10000000)
+  equity Float @default(0)
 
-  balance Int @default(0)
+  balance Float @default(0)
 
-  price Int @default(1)
+  price Float @default(1)
 
+  // holdings
   Holdings Holding[] @relation("bought")
+  TIIYS    Holding[] @relation("sold")
 
-  TIIYS Holding[] @relation("sold")
+  // transactions
+  SellTransactions Transaction[] @relation("sellTransactions")
+  BuyTRansactions  Transaction[] @relation("buyTransactions")
 
   @@unique([firebaseId, email, username])
 }
@@ -47,12 +51,31 @@ model Holding {
   buyerUser User   @relation("bought", fields: [buyer_id], references: [id])
   buyer_id  String @db.ObjectId
 
-  amount Int
+  amount Float
 
   sellerUser User   @relation("sold", fields: [seller_id], references: [id])
   seller_id  String @db.ObjectId
 
-  created DateTime
+  created DateTime @default(now())
+
+  @@unique([buyer_id, seller_id])
+}
+
+// the transaction is of amount shares from seller to buyer
+model Transaction {
+  txn_id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  buyerUser User   @relation("sellTransactions", fields: [buyer_id], references: [id])
+  buyer_id  String @db.ObjectId
+
+  price Float @default(0)
+
+  amount Float
+
+  sellerUser User   @relation("buyTransactions", fields: [seller_id], references: [id])
+  seller_id  String @db.ObjectId
+
+  created DateTime @default(now())
 }
 
 model Post {

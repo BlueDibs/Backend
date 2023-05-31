@@ -4,7 +4,7 @@ import { AddUserDTO, MultipleProfilesDTO, updateUserSchema } from "./user.DTOs";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { bucket } from "src/firebase";
 import { SaveOptions } from "@google-cloud/storage";
-import type { Post as MediaPost } from "@prisma/client";
+import type { Holding, Post as MediaPost } from "@prisma/client";
 
 @Controller('user')
 export class UserController {
@@ -158,11 +158,21 @@ export class UserController {
         const user = await this.pService.user.findFirst({
             where: {
                 id: id
+            },
+            include: {
+                TIIYS: true
             }
         })
 
         if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND)
-        return user
+
+        const sharesAmountSold: number = user?.TIIYS.reduce<number | Holding>((prev, cur) => {
+            if (typeof prev == 'number') return prev + cur.amount
+            else return prev.amount + cur.amount
+        }, 0) as number
+
+        if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND)
+        return { sold: sharesAmountSold, ...user }
     }
 
     @Post()

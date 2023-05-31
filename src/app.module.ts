@@ -9,13 +9,15 @@ import { PassportModule } from '@nestjs/passport';
 import { PostModule } from './post/post.module';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { CommentModule } from './comment/comment.module';
+import { HoldingModule } from './holdings/holdings.module';
 
 @Module({
   imports: [
     PassportModule,
     UserModule,
     PostModule,
-    CommentModule
+    CommentModule,
+    HoldingModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, {
