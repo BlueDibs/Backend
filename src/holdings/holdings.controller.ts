@@ -27,13 +27,13 @@ export class HoldingsController {
                 id: userId
             },
             include: {
-                TIIYS: true
+                Sold: true
             }
         })
 
         if (!seller_user) throw new HttpException('Seller User not found', HttpStatus.NOT_FOUND)
 
-        const sharesAmountSold: number = seller_user?.TIIYS.reduce<number | Holding>((prev, cur) => {
+        const sharesAmountSold: number = seller_user?.Sold.reduce<number | Holding>((prev, cur) => {
             if (typeof prev == 'number') return prev + cur.amount
             else return prev.amount + cur.amount
         }, 0) as number
@@ -42,12 +42,22 @@ export class HoldingsController {
             throw new HttpException('doesnt doesnt have this amount of shares left', HttpStatus.UNPROCESSABLE_ENTITY)
         }
 
-        const createHolding = this.pService.holding.create({
-            data: {
+        const createHolding = this.pService.holding.upsert({
+            where: {
+                buyer_id_seller_id: {
+                    seller_id: userId,
+                    buyer_id: req.user.id
+                }
+            },
+            create: {
                 seller_id: userId,
                 buyer_id: req.user.id,
                 amount: body.amount,
-                price: seller_user.price
+            },
+            update: {
+                amount: {
+                    increment: body.amount
+                }
             }
         })
 
@@ -63,7 +73,15 @@ export class HoldingsController {
             }
         })
 
-        await this.pService.$transaction([createHolding, mutatePrice])
+        const txn = this.pService.transaction.create({
+            data: {
+                buyer_id: req.user.id,
+                seller_id: userId,
+                amount: body.amount,
+            }
+        })
+
+        await this.pService.$transaction([createHolding, mutatePrice, txn])
     }
 
     @Post('sell/:userId')
@@ -74,22 +92,61 @@ export class HoldingsController {
             },
         })
 
-        const cur_usr_hld_amnt = await this.pService.holding.findMany({
+        if (!share_owner) throw new HttpException('seller user not found', HttpStatus.NOT_FOUND)
+
+        const cur_usr_hld_amnt = await this.pService.holding.findUnique({
             where: {
-                seller_id: share_owner?.id,
-                buyer_id: req.user.id
+                buyer_id_seller_id: {
+                    seller_id: share_owner?.id,
+                    buyer_id: req.user.id
+                }
             },
         })
 
-        const ttl_amnt_hold_by_cur_usr = cur_usr_hld_amnt.reduce<number>((prev: number | Holding, current) => {
-            if (typeof prev == 'number') return prev + current.amount;
-            else return prev.amount + current.amount
-        }, 0)
+        if (!cur_usr_hld_amnt) throw new HttpException('User doesnt have any holding for this account', HttpStatus.UNPROCESSABLE_ENTITY)
 
-        if (ttl_amnt_hold_by_cur_usr > body.amount) {
+        if (body.amount > cur_usr_hld_amnt.amount) {
             throw new HttpException('Not enought holdings of this shares', HttpStatus.UNPROCESSABLE_ENTITY)
         }
 
+        // REVERSE HOLDING
+        // means the buy and selling holding is reversing
+        const sell_amount = this.pService.holding.update({
+            where: {
+                buyer_id_seller_id: {
+                    seller_id: share_owner?.id,
+                    buyer_id: req.user.id
+                }
+            },
+            data: {
+                amount: {
+                    decrement: body.amount
+                }
+            }
+        })
+
+        const new_price = share_owner.price - (body.amount * share_owner.price) / share_owner.shares
+
+        const mut_price = this.pService.user.update({
+            where: {
+                id: share_owner.id
+            },
+            data: {
+                price: new_price
+            }
+        })
+
+        // opposite
+        // the buyer is who buying his shares back
+        const txn = this.pService.transaction.create({
+            data: {
+                buyer_id: share_owner?.id,
+                seller_id: req.user.id,
+                amount: body.amount,
+            }
+        })
+
+        await this.pService.$transaction([sell_amount, mut_price, txn])
     }
 
 }

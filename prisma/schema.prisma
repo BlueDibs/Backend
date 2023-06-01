@@ -36,7 +36,7 @@ model User {
 
   // holdings
   Holdings Holding[] @relation("bought")
-  TIIYS    Holding[] @relation("sold")
+  Sold     Holding[] @relation("sold")
 
   // transactions
   SellTransactions Transaction[] @relation("sellTransactions")
