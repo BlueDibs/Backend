@@ -78,6 +78,16 @@ export class HoldingsController {
       );
     }
 
+    // buyer
+    const buyer = await this.pService.user.findFirst({
+      where: {
+        id: req.user.id,
+      },
+    });
+
+    if (seller_user.price * body.amount > (buyer?.balance || 0))
+      throw new HttpException('not enought balance', HttpStatus.FORBIDDEN);
+
     const createHolding = this.pService.holding.upsert({
       where: {
         buyer_id_seller_id: {

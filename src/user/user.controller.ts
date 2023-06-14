@@ -50,7 +50,33 @@ export class UserController {
       ttlReturns += holding.amount * holding.sellerUser.price;
     }
 
-    return { holdings, ttlInvestment, ttlReturns, balance: stats?.balance };
+    const tiiys = await this.pService.holding.findMany({
+      where: {
+        sellerUser: {
+          firebaseId: req.user.user_id,
+        },
+      },
+      include: {
+        buyerUser: {
+          select: {
+            username: true,
+          },
+        },
+        sellerUser: {
+          select: {
+            price: true,
+          },
+        },
+      },
+    });
+
+    return {
+      holdings,
+      ttlInvestment,
+      ttlReturns,
+      balance: stats?.balance,
+      tiiys,
+    };
   }
 
   @Get('username/:username')
