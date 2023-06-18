@@ -246,7 +246,21 @@ export class UserController {
     ) as number;
 
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    return { sold: sharesAmountSold, ...user };
+
+    // generate and send it's graph data
+    const userTxns = await this.pService.transaction.findMany({
+      where: {
+        buyer_id: id,
+        OR: {
+          seller_id: id,
+        },
+      },
+      orderBy: {
+        created: 'desc',
+      },
+    });
+
+    return { sold: sharesAmountSold, ...user, userTxns };
   }
 
   @Post()

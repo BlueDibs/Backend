@@ -30,8 +30,6 @@ export class HoldingsController {
 
   @Get()
   async getUserHoldings(@Req() req) {
-    console.log(req.user.user_id);
-
     const holdings = await this.pService.holding.findMany({
       where: {
         buyerUser: {
