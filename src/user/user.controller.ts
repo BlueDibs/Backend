@@ -19,6 +19,7 @@ import { bucket } from 'src/firebase';
 import { SaveOptions } from '@google-cloud/storage';
 import type { Holding, Post as MediaPost } from '@prisma/client';
 import { HoldingService } from 'src/holdings/holdings.service';
+import * as dayjs from 'dayjs';
 
 @Controller('user')
 export class UserController {
@@ -250,17 +251,36 @@ export class UserController {
     // generate and send it's graph data
     const userTxns = await this.pService.transaction.findMany({
       where: {
-        buyer_id: id,
-        OR: {
-          seller_id: id,
-        },
+        seller_id: id,
       },
       orderBy: {
         created: 'desc',
       },
     });
 
-    return { sold: sharesAmountSold, ...user, userTxns };
+    const graphData: { date: Date; price: number }[] = [];
+
+    for (const day of [0, 1, 2, 3, 4, 5, 6, 7]) {
+      const date = {
+        x: dayjs().subtract(day, 'day'),
+        price: graphData[graphData.length - 1]?.price,
+      };
+
+      // calculate price using reverse price addition
+      for (const txn of userTxns) {
+        if (dayjs(txn.created).isBefore(date.x)) {
+          date.price = txn.newPrice;
+          break;
+        }
+      }
+
+      graphData.push({
+        date: date.x.toDate(),
+        price: date.price,
+      });
+    }
+
+    return { sold: sharesAmountSold, ...user, userTxns, graphData };
   }
 
   @Post()

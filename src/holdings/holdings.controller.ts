@@ -97,6 +97,7 @@ export class HoldingsController {
         seller_id: userId,
         buyer_id: req.user.id,
         amount: body.amount,
+        price: seller_user.price,
       },
       update: {
         amount: {
@@ -123,6 +124,8 @@ export class HoldingsController {
         buyer_id: req.user.id,
         seller_id: userId,
         amount: body.amount,
+        newPrice,
+        price: seller_user.price,
       },
     });
 
@@ -195,9 +198,11 @@ export class HoldingsController {
     // the buyer is who buying his shares back
     const txn = this.pService.transaction.create({
       data: {
-        buyer_id: share_owner?.id,
-        seller_id: req.user.id,
-        amount: body.amount,
+        buyer_id: req.user.id,
+        seller_id: share_owner?.id,
+        amount: body.amount * -1,
+        newPrice: new_price,
+        price: share_owner.price,
       },
     });
 

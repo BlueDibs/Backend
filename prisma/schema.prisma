@@ -51,7 +51,7 @@ model Holding {
   buyerUser User   @relation("bought", fields: [buyer_id], references: [id])
   buyer_id  String @db.ObjectId
 
-  price Float
+  price Float @default(0)
 
   amount Float
 
@@ -73,6 +73,8 @@ model Transaction {
   price Float @default(0)
 
   amount Float
+
+  newPrice Float @default(0)
 
   sellerUser User   @relation("buyTransactions", fields: [seller_id], references: [id])
   seller_id  String @db.ObjectId
