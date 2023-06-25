@@ -47,6 +47,13 @@ export class HoldingsController {
     }));
   }
 
+  /**
+   *
+   * @param userId
+   * @param body
+   * @param req
+   * @name  BuyShares
+   */
   @Post('buy/:userId')
   async buy(@Param('userId') userId, @Body() body: buyDTO, @Req() req) {
     const seller_user = await this.pService.user.findFirst({
@@ -76,6 +83,9 @@ export class HoldingsController {
       );
     }
 
+    const amountToPay = body.amount * seller_user.price;
+    const totalAmountToPay = amountToPay + (amountToPay * 0.2) / 100;
+
     // buyer
     const buyer = await this.pService.user.findFirst({
       where: {
@@ -83,7 +93,7 @@ export class HoldingsController {
       },
     });
 
-    if (seller_user.price * body.amount > (buyer?.balance || 0))
+    if (totalAmountToPay > (buyer?.balance || 0))
       throw new HttpException('not enought balance', HttpStatus.FORBIDDEN);
 
     const createHolding = this.pService.holding.upsert({
@@ -106,9 +116,7 @@ export class HoldingsController {
       },
     });
 
-    const newPrice =
-      seller_user.price +
-      (body.amount * seller_user.price) / seller_user.shares;
+    const newPrice = seller_user.price + totalAmountToPay / seller_user.shares;
 
     const mutatePrice = this.pService.user.update({
       where: {
@@ -129,7 +137,37 @@ export class HoldingsController {
       },
     });
 
-    await this.pService.$transaction([createHolding, mutatePrice, txn]);
+    /**
+     *  @description  Wallet deduct & 0.2 increment on seller wallet
+     */
+    const deductTxn = this.pService.user.update({
+      where: {
+        id: buyer?.id,
+      },
+      data: {
+        balance: {
+          decrement: totalAmountToPay,
+        },
+      },
+    });
+    const incmtSellerBal = this.pService.user.update({
+      where: {
+        id: seller_user.id,
+      },
+      data: {
+        balance: {
+          increment: (amountToPay * 0.2) / 100,
+        },
+      },
+    });
+
+    await this.pService.$transaction([
+      createHolding,
+      mutatePrice,
+      txn,
+      deductTxn,
+      incmtSellerBal,
+    ]);
   }
 
   @Post('sell/:userId')
@@ -206,6 +244,36 @@ export class HoldingsController {
       },
     });
 
-    await this.pService.$transaction([sell_amount, mut_price, txn]);
+    /**
+     *  @description  Wallet increment & 0.2 increment on seller wallet
+     */
+    const walIncr = this.pService.user.update({
+      where: {
+        id: req.user.id,
+      },
+      data: {
+        balance: {
+          increment: body.amount * share_owner.price,
+        },
+      },
+    });
+    const shareOwnerIncr = this.pService.user.update({
+      where: {
+        id: share_owner.id,
+      },
+      data: {
+        balance: {
+          increment: (body.amount * share_owner.price * 0.2) / 100,
+        },
+      },
+    });
+
+    await this.pService.$transaction([
+      sell_amount,
+      mut_price,
+      txn,
+      walIncr,
+      shareOwnerIncr,
+    ]);
   }
 }
