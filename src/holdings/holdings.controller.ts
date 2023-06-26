@@ -203,6 +203,9 @@ export class HoldingsController {
       );
     }
 
+    const amount_received = body.amount * share_owner.price;
+    const final_amount = amount_received - (amount_received * 0.2) / 100;
+
     // REVERSE HOLDING
     // means the buy and selling holding is reversing
     const sell_amount = this.pService.holding.update({
@@ -253,7 +256,7 @@ export class HoldingsController {
       },
       data: {
         balance: {
-          increment: body.amount * share_owner.price,
+          increment: final_amount,
         },
       },
     });
@@ -263,7 +266,7 @@ export class HoldingsController {
       },
       data: {
         balance: {
-          increment: (body.amount * share_owner.price * 0.2) / 100,
+          increment: amount_received * (0.2 / 100),
         },
       },
     });
