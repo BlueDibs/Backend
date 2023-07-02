@@ -1,22 +1,30 @@
-import { createZodDto } from 'nestjs-zod'
-import { z } from 'nestjs-zod/z'
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'nestjs-zod/z';
 
-const addUserSchema = z.object({
+const addUserSchema = z
+  .object({
     firebaseId: z.string(),
     email: z.string(),
     username: z.string(),
-}).strict()
+  })
+  .strict();
 
-export const updateUserSchema = addUserSchema.partial().omit({ firebaseId: true, email: true }).extend({
+export const updateUserSchema = addUserSchema
+  .partial()
+  .omit({ firebaseId: true, email: true })
+  .extend({
     bio: z.string().optional(),
     avatar: z.any().optional(),
-    avatarPath: z.string().optional()
-}).strict()
+    avatarPath: z.string().optional(),
+  })
+  .strict();
 
+export const multipleProfileDTO = z.array(z.string());
+const usrSetupSchema = z.object({
+  shares_dilute: z.number(),
+});
 
-export const multipleProfileDTO = z.array(z.string())
-
-export class AddUserDTO extends createZodDto(addUserSchema) { }
-export class UpdateUserDTO extends createZodDto(updateUserSchema) { }
-export class MultipleProfilesDTO extends createZodDto(multipleProfileDTO) { }
-
+export class UserSetupDTO extends createZodDto(usrSetupSchema) {}
+export class AddUserDTO extends createZodDto(addUserSchema) {}
+export class UpdateUserDTO extends createZodDto(updateUserSchema) {}
+export class MultipleProfilesDTO extends createZodDto(multipleProfileDTO) {}

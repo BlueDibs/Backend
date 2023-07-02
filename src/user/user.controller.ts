@@ -13,13 +13,19 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { PrismaService } from 'src/Prisma.Service';
-import { AddUserDTO, MultipleProfilesDTO, updateUserSchema } from './user.DTOs';
+import {
+  AddUserDTO,
+  MultipleProfilesDTO,
+  UserSetupDTO,
+  updateUserSchema,
+} from './user.DTOs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { bucket } from 'src/firebase';
 import { SaveOptions } from '@google-cloud/storage';
 import type { Holding, Post as MediaPost } from '@prisma/client';
 import { HoldingService } from 'src/holdings/holdings.service';
 import * as dayjs from 'dayjs';
+import { Request } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -287,12 +293,24 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async addUser(@Body() body: AddUserDTO) {
     try {
-      await this.pService.user.create({ data: body });
+      await this.pService.user.create({ data: { ...body, shares: 0 } });
     } catch (err) {
       if (err.code == 'P2002') {
         throw new HttpException('User already exsists', HttpStatus.CONFLICT);
       }
     }
+  }
+
+  @Post('setup')
+  async setUp(@Body() body: UserSetupDTO, @Req() req) {
+    return this.pService.user.update({
+      where: {
+        firebaseId: req.user.user_id,
+      },
+      data: {
+        shares: body.shares_dilute,
+      },
+    });
   }
 
   @Get('search/:name')

@@ -11,6 +11,6 @@ import { HoldingService } from './holdings.service';
 })
 export class HoldingModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes('*');
+    consumer.apply(AuthMiddleware).forRoutes(HoldingsController);
   }
 }
