@@ -13,7 +13,9 @@ export class HoldingService {
         },
       },
       include: {
-        sellerUser: true,
+        sellerUser: {
+          select: { id: true, price: true, username: true },
+        },
       },
     });
 

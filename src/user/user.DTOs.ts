@@ -22,6 +22,7 @@ export const updateUserSchema = addUserSchema
 export const multipleProfileDTO = z.array(z.string());
 const usrSetupSchema = z.object({
   shares_dilute: z.number(),
+  equity_shares: z.number(),
 });
 
 export class UserSetupDTO extends createZodDto(usrSetupSchema) {}

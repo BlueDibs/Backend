@@ -26,12 +26,14 @@ import type { Holding, Post as MediaPost } from '@prisma/client';
 import { HoldingService } from 'src/holdings/holdings.service';
 import * as dayjs from 'dayjs';
 import { Request } from 'express';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly pService: PrismaService,
-    private readonly holdingService: HoldingService
+    private readonly holdingService: HoldingService,
+    private readonly userService: UserService
   ) {}
 
   @Get('wallet')
@@ -264,27 +266,7 @@ export class UserController {
       },
     });
 
-    const graphData: { date: Date; price: number }[] = [];
-
-    for (const day of [0, 1, 2, 3, 4, 5, 6, 7]) {
-      const date = {
-        x: dayjs().subtract(day, 'day'),
-        price: graphData[graphData.length - 1]?.price,
-      };
-
-      // calculate price using reverse price addition
-      for (const txn of userTxns) {
-        if (dayjs(txn.created).isBefore(date.x)) {
-          date.price = txn.newPrice;
-          break;
-        }
-      }
-
-      graphData.push({
-        date: date.x.toDate(),
-        price: date.price,
-      });
-    }
+    const graphData = this.userService.generateGraphData(userTxns);
 
     return { sold: sharesAmountSold, ...user, userTxns, graphData };
   }
