@@ -27,12 +27,14 @@ model User {
   PostsLiked   Post[]    @relation("postLiked", fields: [PostLikedIDs], references: [id])
   Comment      Comment[]
 
-  shares Int   @default(10000000)
-  equity Float @default(0)
+  shares Int @default(10000000)
 
   balance Float @default(0)
 
   price Float @default(1)
+
+  userEquity     Float @default(10)
+  platformEquity Float @default(2.5)
 
   // holdings
   Holdings Holding[] @relation("bought")
