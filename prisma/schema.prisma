@@ -27,7 +27,7 @@ model User {
   PostsLiked   Post[]    @relation("postLiked", fields: [PostLikedIDs], references: [id])
   Comment      Comment[]
 
-  shares Int @default(10000000)
+  shares Float @default(10000000)
 
   balance Float @default(0)
 

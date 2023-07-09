@@ -25,7 +25,12 @@ const usrSetupSchema = z.object({
   equity_shares: z.number(),
 });
 
+const sellOwnEquitySchema = z.object({
+  percentage: z.number().max(10).min(0),
+});
+
 export class UserSetupDTO extends createZodDto(usrSetupSchema) {}
 export class AddUserDTO extends createZodDto(addUserSchema) {}
 export class UpdateUserDTO extends createZodDto(updateUserSchema) {}
 export class MultipleProfilesDTO extends createZodDto(multipleProfileDTO) {}
+export class SellOwnEquity extends createZodDto(sellOwnEquitySchema) {}

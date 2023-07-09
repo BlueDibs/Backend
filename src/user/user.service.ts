@@ -42,7 +42,7 @@ export class UserService {
     if (!user)
       throw new HttpException('user doesnt exsist', HttpStatus.NOT_FOUND);
 
-    if (percentage < user.userEquity)
+    if (percentage > user.userEquity)
       throw new HttpException(
         'user doesnt have this much equity left',
         HttpStatus.FORBIDDEN
@@ -51,10 +51,13 @@ export class UserService {
     // obtain percentage
     const sellPercentage = (percentage / user.userEquity) * 100;
     let totalPercentage = percentage;
-    const platformEquity = user.platformEquiry * (percentage / 100);
+    const platformEquity = user.platformEquity * (percentage / 100);
     totalPercentage += platformEquity;
-    const sharesToSell = user.shares * totalPercentage;
+    const sharesToSell = user.shares * (totalPercentage / 100);
     const balance = sharesToSell * user.price;
+
+    console.log(totalPercentage);
+    debugger;
 
     if (sellPercentage > 100)
       throw new HttpException(
@@ -69,12 +72,12 @@ export class UserService {
       },
       data: {
         userEquity: {
-          decrement: percentage,
+          decrement: 1,
         },
         shares: {
-          decrement: sharesToSell,
+          decrement: 1,
         },
-        platformEquiry: {
+        platformEquity: {
           decrement: platformEquity,
         },
         balance: {
