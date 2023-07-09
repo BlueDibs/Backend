@@ -16,6 +16,7 @@ import { PrismaService } from 'src/Prisma.Service';
 import {
   AddUserDTO,
   MultipleProfilesDTO,
+  SellOwnEquity,
   UserSetupDTO,
   updateUserSchema,
 } from './user.DTOs';
@@ -319,6 +320,17 @@ export class UserController {
         User: true,
       },
     });
+  }
+
+  @Post('sell-own-equity')
+  @HttpCode(HttpStatus.OK)
+  async sellOwnEquity(@Req() req, @Body() body: SellOwnEquity) {
+    await this.userService.sellPlatformEquity(
+      req.user.user_id,
+      body.percentage
+    );
+
+    return 'Sold';
   }
 
   @Patch()
