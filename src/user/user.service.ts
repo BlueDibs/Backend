@@ -51,13 +51,12 @@ export class UserService {
     // obtain percentage
     const sellPercentage = (percentage / user.userEquity) * 100;
     let totalPercentage = percentage;
-    const platformEquity = user.platformEquity * (percentage / 100);
+    const platformEquity = user.platformEquity * (sellPercentage / 100);
     totalPercentage += platformEquity;
     const sharesToSell = user.shares * (totalPercentage / 100);
-    const balance = sharesToSell * user.price;
+    const balance = user.shares * (percentage / 100) * user.price;
 
     console.log(totalPercentage);
-    debugger;
 
     if (sellPercentage > 100)
       throw new HttpException(
@@ -71,18 +70,11 @@ export class UserService {
         firebaseId,
       },
       data: {
-        userEquity: {
-          decrement: 1,
-        },
-        shares: {
-          decrement: 1,
-        },
-        platformEquity: {
-          decrement: platformEquity,
-        },
-        balance: {
-          increment: balance,
-        },
+        // atomic increment not woring
+        userEquity: user.userEquity - percentage,
+        shares: user.shares - sharesToSell,
+        platformEquity: user.platformEquity - platformEquity,
+        balance: user.balance + balance,
       },
     });
   }
