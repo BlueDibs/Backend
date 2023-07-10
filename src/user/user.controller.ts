@@ -298,12 +298,16 @@ export class UserController {
   }
 
   @Get('search/:name')
-  searchUserByName(@Param('name') name) {
+  searchUserByName(@Param('name') name, @Req() req) {
     return this.pService.user.findMany({
       where: {
         username: {
           contains: name,
           mode: 'insensitive',
+        },
+
+        id: {
+          not: req.user.id,
         },
       },
     });
