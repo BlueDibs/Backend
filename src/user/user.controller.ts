@@ -377,4 +377,22 @@ export class UserController {
       }
     }
   }
+
+  @Get('suggestions/users')
+  async getSuggetedUsers(@Req() req) {
+    return this.pService.user
+      .findMany({
+        where: {
+          NOT: {
+            followers: {
+              some: { id: req.user.id },
+            },
+          },
+        },
+
+        take: 10,
+        orderBy: { Posts: { _count: 'asc' } },
+      })
+      .then((users) => users.filter((user) => user.id !== req.user.id));
+  }
 }
