@@ -232,7 +232,19 @@ export class UserController {
 
     if (!user) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 
-    return user;
+    const INRLocked = (
+      await this.pService.holding.findMany({
+        where: {
+          seller_id: user.id,
+        },
+        select: {
+          price: true,
+          amount: true,
+        },
+      })
+    ).reduce((acc, curr) => curr.price * curr.amount + acc, 0);
+
+    return { ...user, INRLocked };
   }
 
   @Get(':id')
@@ -385,7 +397,7 @@ export class UserController {
         where: {
           NOT: {
             followers: {
-              some: { firebaseId: req.user.id },
+              some: { id: req.user.id },
             },
           },
         },
