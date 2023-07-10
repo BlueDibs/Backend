@@ -48,6 +48,7 @@ export class UserService {
         HttpStatus.FORBIDDEN
       );
 
+    // example : percentage = 2.5%, user.platformEquity = 2.5%, user.userEquity = 10%
     // obtain percentage
     const sellPercentage = (percentage / user.userEquity) * 100;
     let totalPercentage = percentage;
@@ -59,10 +60,7 @@ export class UserService {
     console.log(totalPercentage);
 
     if (sellPercentage > 100)
-      throw new HttpException(
-        'not enought equity left',
-        HttpStatus.UNPROCESSABLE_ENTITY
-      );
+      throw new HttpException('not enought equity left', HttpStatus.FORBIDDEN);
 
     // txns
     await this.pService.user.update({
