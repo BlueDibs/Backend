@@ -34,14 +34,14 @@ export class UserController {
   constructor(
     private readonly pService: PrismaService,
     private readonly holdingService: HoldingService,
-    private readonly userService: UserService,
+    private readonly userService: UserService
   ) {}
 
   @Get('wallet')
   async getUserFinancialInfo(@Req() req) {
     // get holdings
     const holdings = await this.holdingService.getUserHoldings(
-      req.user.user_id,
+      req.user.user_id
     );
 
     // get user profile for calculating stats
@@ -170,7 +170,7 @@ export class UserController {
       .flatMap((item) => item.Posts)
       .sort(
         (a, b) =>
-          new Date(b.created).getSeconds() - new Date(a.created).getSeconds(),
+          new Date(b.created).getSeconds() - new Date(a.created).getSeconds()
       );
 
     return posts;
@@ -232,7 +232,19 @@ export class UserController {
 
     if (!user) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 
-    return user;
+    const INRLocked = (
+      await this.pService.holding.findMany({
+        where: {
+          seller_id: user.id,
+        },
+        select: {
+          price: true,
+          amount: true,
+        },
+      })
+    ).reduce((acc, curr) => curr.price * curr.amount + acc, 0);
+
+    return { ...user, INRLocked };
   }
 
   @Get(':id')
@@ -253,7 +265,7 @@ export class UserController {
         if (typeof prev == 'number') return prev + cur.amount;
         else return prev.amount + cur.amount;
       },
-      0,
+      0
     ) as number;
 
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -332,7 +344,7 @@ export class UserController {
   async sellOwnEquity(@Req() req, @Body() body: SellOwnEquity) {
     await this.userService.sellPlatformEquity(
       req.user.user_id,
-      body.percentage,
+      body.percentage
     );
 
     return 'Sold';
@@ -343,7 +355,7 @@ export class UserController {
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUser(
     @Req() req,
-    @UploadedFile('file') avatar: Express.Multer.File,
+    @UploadedFile('file') avatar: Express.Multer.File
   ) {
     const body = updateUserSchema.parse(req.body);
 
@@ -376,7 +388,7 @@ export class UserController {
       if (err.code == 'P2002' && err.meta.target.includes['username']) {
         throw new HttpException(
           'username already exsists',
-          HttpStatus.CONFLICT,
+          HttpStatus.CONFLICT
         );
       }
     }
