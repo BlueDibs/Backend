@@ -25,8 +25,6 @@ import { bucket } from 'src/firebase';
 import { SaveOptions } from '@google-cloud/storage';
 import type { Holding, Post as MediaPost } from '@prisma/client';
 import { HoldingService } from 'src/holdings/holdings.service';
-import * as dayjs from 'dayjs';
-import { Request } from 'express';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -34,14 +32,14 @@ export class UserController {
   constructor(
     private readonly pService: PrismaService,
     private readonly holdingService: HoldingService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
   ) {}
 
   @Get('wallet')
   async getUserFinancialInfo(@Req() req) {
     // get holdings
     const holdings = await this.holdingService.getUserHoldings(
-      req.user.user_id
+      req.user.user_id,
     );
 
     // get user profile for calculating stats
@@ -136,44 +134,54 @@ export class UserController {
   // feeds algorithim
   @Get('feed')
   async getUserFeeds(@Req() req) {
-    const user = await this.pService.user.findFirst({
-      where: {
-        firebaseId: req.user.user_id,
-      },
-      select: {
-        following: {
-          include: {
-            Posts: {
-              orderBy: {
-                created: 'desc',
-              },
-              take: 5,
-              include: {
-                User: {
-                  select: {
-                    username: true,
-                    avatarPath: true,
-                    id: true,
-                    price: true,
-                  },
-                },
-              },
+    const page = req.query.page ?? 1;
+    const perPage = 15;
+
+    return this.pService.$transaction(async (tx) => {
+      const user = await tx.user.findFirst({
+        where: {
+          firebaseId: req.user.user_id,
+        },
+
+        select: {
+          following: {
+            select: {
+              id: true,
             },
           },
         },
-      },
-    });
+      });
 
-    if (!user) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-
-    const posts: MediaPost[] = user.following
-      .flatMap((item) => item.Posts)
-      .sort(
-        (a, b) =>
-          new Date(b.created).getSeconds() - new Date(a.created).getSeconds()
+      const followwingUserIds = (user?.following ?? []).map(
+        (fUser) => fUser.id,
       );
 
-    return posts;
+      const posts = await this.pService.post.findMany({
+        where: {
+          userId: {
+            in: followwingUserIds,
+          },
+        },
+
+        orderBy: {
+          created: 'desc',
+        },
+
+        take: page * perPage,
+        include: {
+          User: {
+            select: {
+              username: true,
+              avatarPath: true,
+              id: true,
+              price: true,
+            },
+          },
+        },
+      });
+
+      return posts;
+    });
   }
 
   @Post('follow/:id')
@@ -265,7 +273,7 @@ export class UserController {
         if (typeof prev == 'number') return prev + cur.amount;
         else return prev.amount + cur.amount;
       },
-      0
+      0,
     ) as number;
 
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -344,7 +352,7 @@ export class UserController {
   async sellOwnEquity(@Req() req, @Body() body: SellOwnEquity) {
     await this.userService.sellPlatformEquity(
       req.user.user_id,
-      body.percentage
+      body.percentage,
     );
 
     return 'Sold';
@@ -355,7 +363,7 @@ export class UserController {
   @UseInterceptors(FileInterceptor('avatar'))
   async updateUser(
     @Req() req,
-    @UploadedFile('file') avatar: Express.Multer.File
+    @UploadedFile('file') avatar: Express.Multer.File,
   ) {
     const body = updateUserSchema.parse(req.body);
 
@@ -388,7 +396,7 @@ export class UserController {
       if (err.code == 'P2002' && err.meta.target.includes['username']) {
         throw new HttpException(
           'username already exsists',
-          HttpStatus.CONFLICT
+          HttpStatus.CONFLICT,
         );
       }
     }
